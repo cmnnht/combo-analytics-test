@@ -11,3 +11,57 @@ models:
   - name: int_billable_location
     description : Table référençant uniquement les établissements facturables i.e. non archivés
   - name: int_weekly_location_metrics
+
+
+  - name: int_user_contracts_deduplicated
+    description: "Modèle intermédiaire filtrant les contrats utilisateur pour ne conserver que le contrat actif ou le plus prioritaire (CDI > Apprentissage > CDD > Saisonnier) par membre et ne gardant que les contrats liés à un réel employé présent en base"
+
+    columns:
+      - name: user_contract_id
+        description: "Identifiant unique du contrat utilisateur."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: membership_id
+        description: "Identifiant unique du membre. Garanti unique dans ce modèle suite au filtrage par rang de priorité."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_raw__memberships')
+                field: membership_id
+
+      - name: location_id
+        description: "Identifiant de l'établissement (location) associé au contrat. Filtré sur les établissements valides."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_raw__locations')
+                field: location_id
+
+      - name: account_id
+        description: "Identifiant de l'entreprise ou du compte client principal."
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_raw__accounts')
+                field: account_id
+
+      - name: contract_start
+        description: "Date exacte de début du contrat."
+        data_tests:
+          - not_null
+
+      - name: contract_end
+        description: "Date exacte de fin du contrat (peut être nulle pour un CDI)."
+
+      - name: contract_start_week
+        description: "Lundi de la semaine correspondant à la date de début du contrat."
+        data_tests:
+          - not_null
+
+      - name: contract_end_week
+        description: "Lundi de la semaine correspondant à la date de fin du contrat."

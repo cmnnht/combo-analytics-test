@@ -122,6 +122,7 @@ models :
               arguments:
                 to: ref('stg_raw__locations')
                 field: location_id
+                severity : warn
       - name: account_id
         description: The ID of the account associated with the membership.
         data_tests:
@@ -130,6 +131,7 @@ models :
               arguments:
                 to: ref('stg_raw__accounts')
                 field: account_id
+                severity : warn
       - name: contract_start 
         description: The start date of the user contract.
         data_tests:
