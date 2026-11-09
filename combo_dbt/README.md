@@ -1,6 +1,12 @@
-## 🏗️ Architecture du Projet dbt
+## Entrepôt de données
 
-Le pipeline de données a été construit en respectant les principes de modularité, de traçabilité financière et de séparation des concepts. L'architecture se décline en trois couches distinctes (architecture en médaillon) :
+Snowflake a été utilisé afin de contruire cette base de donnée. Le script d'initialisation utilisé est situé dans le fichier scripts/snwoflake_init.sql. Les tables ont été ajoutées à la main dans une base Combo_projectet un schéma Raw. J'ai également mis en place un script python pour faire de même (load_raw.py). Pré-requis pour son utilisation : 
+- Mettre la donnée dans data/raw
+- Configurer les paramètres snwoflake dans un fichier .env en copiant .env_example.
+
+## 🏗️ Architecture du Projet dbt
+ Ce projet est construit classiquement pour un projet DBT. Un schéma en étoile de Kimball est appliqué pour la couche mart.
+L'architecture se décline en trois couches distinctes (architecture en médaillon) :
 1. **Couche Staging (staging/)** : Nettoyage initial, alignement des types de données (Cast) et renommage et normalisation syntaxique des sources brutes (CSV).
 2. **Couche Intermediate (intermediate/)** : centralisation des règles de gestion complexes. C'est ici que sont appliqués le dédoublonnement asymétrique des plannings (shifts vs repos) et l'algorithme de calcul des tranches tarifaires à l'usage par établissement, basé sur le fichier de référence (seed).
 3. **Couche Marts (marts/)**: Modélisation en étoile (Star Schema) optimisée pour les outils de BI. Les tables de faits ne contiennent que des clés d'index et des métriques numériques exploitables. Les libellés textuels sont isolés dans des tables de dimensions dédiées.
@@ -33,6 +39,11 @@ Au cours de la phase d'audit et de modélisation des données brutes, quatre ano
 • **Description :** Des événements de planning ont été enregistrés pour des employés à des dates où aucun contrat n'était actif (avant la date de début ou après la date de fin). Par ailleurs, des événements de planning ont été enregistrés pour des employés qui ne sont pas référencés a priori (aucun matricule correspondant) dans la table membership. Nous avons donc deux raisons pour lesquelles ces contrats sont orphelins.
 • **Détection (Test) :** Implémentation du test d'intégrité référentielle temporelle `tests/assert_shift_dates_within_contract_bounds.sql`. Application du test relationship pour la colonne user_contract_id avec la clé primaire de la table `user_contracts`.
 • **Résolution Métier :** Une jointure interne (`INNER JOIN`) stricte entre les activités dédoublonnées et la table des contrats nettoyés élimine automatiquement ces lignes orphelines du calcul de la facturation d'une part. D'autre part, un filtre est appliqué pour ne garder que les événements dont les dates sont comprises dans un contrats.
+
+### 📜 Anomalie 4 : Des contrats sans utilisateurs / employés connus
+• **Description :** Il existe 4 contrats qui ne sont pas liés à un employé connu.
+• **Détection (Test) :** Implémentation d'un test de relationship simple entre la clé `membership_id` de la table ``stg_raw__user_contract`` et la clé primaire de la table ``memberships``dans la table ``stg_raw__membership``.  Ce test sert à alerter dans un premier temps. On s'assure ensuite dans la couche intermédiaire de ne pas travailler avec des contrats d'ayant pas d'employé associé au travers d'un INNER JOIN scrict dans la table ``int_user_contracts_deduplicated``. Un test de la relation est alors réeffectué cette fois en mode erreur pour bloquer la génération de donnée erronée en amont.
+• **Résolution Métier :** Il y a remontée d'alerte dans ces cas précis afin de pouvoir faire remonter le cas au métier et que potientielle correction il puisse avoir lieu en amont. On filtre ensuite les contrats sans employé défini. On fait par ailleurs de même concernant les établissements non définis.
 
 
 ## ☝️ Quelques remarques supplémentaires
