@@ -1,8 +1,25 @@
-## Entrepôt de données
+## 🗄️ Entrepôt de données (Snowflake)
 
-Snowflake a été utilisé afin de contruire cette base de donnée. Le script d'initialisation utilisé est situé dans le fichier scripts/snwoflake_init.sql. Les tables ont été ajoutées à la main dans une base Combo_projectet un schéma Raw. J'ai également mis en place un script python pour faire de même (load_raw.py). Pré-requis pour son utilisation : 
-- Mettre la donnée dans data/raw
-- Configurer les paramètres snwoflake dans un fichier .env en copiant .env_example.
+L'entrepôt de données de ce projet repose sur la plateforme **Snowflake**. Les données y sont structurées au sein de la base de données `COMBO_PROJECT` et organisées à travers différentes couches de schémas (à commencer par le schéma `RAW` pour les données sources).
+
+### 1. Initialisation de l'environnement
+L'infrastructure de la base de données (bases, schémas, entrepôt de calcul et rôles de sécurité) est configurée via le script d'initialisation :
+📌 **Fichier :** `scripts/snowflake_init.sql`
+
+*Note : Ce script doit être exécuté par un administrateur Snowflake (`ACCOUNTADMIN`) avant le premier chargement ou la première exécution de dbt.*
+
+### 2. Chargement des données brutes (`RAW`)
+Pour alimenter le schéma `RAW`, les tables peuvent être importées manuellement depuis l'interface Snowsight, ou de manière automatisée à l'aide d'un script d'ingestion.
+
+Un script Python clé en main est mis à disposition pour automatiser le chargement local des fichiers volumineux (comme `shifts.csv`) :
+📌 **Fichier :** `load_raw.py`
+
+#### 🛠️ Pré-requis pour l'utilisation du script Python :
+1. **Données sources :** Placez l'ensemble de vos fichiers d'extraction au format CSV dans le répertoire `data/raw/` (ex: `data/raw/shifts.csv`).
+2. **Variables d'environnement :** 
+   * Créez un fichier `.env` à la racine du projet en copiant le modèle fourni : `cp .env_example .env`
+   * Complétez-le avec vos identifiants de connexion et paramètres Snowflake (`SNOWFLAKE_ACCOUNT`, `USER`, `PASSWORD`, etc.).
+
 
 ## 🏗️ Architecture du Projet dbt
  Ce projet est construit classiquement pour un projet DBT. Un schéma en étoile de Kimball est appliqué pour la couche mart.
