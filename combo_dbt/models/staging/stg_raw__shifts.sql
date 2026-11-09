@@ -1,0 +1,23 @@
+SELECT
+    id                                                   AS shift_id,
+    user_contract_id                                     AS user_contract_id,
+    weeklyschedule_id                                    AS weekly_schedule_id,
+    label_id,
+    breakduration                                        AS break_duration,
+    {{ clean_snowflake_utc_date('starts_at') }}          AS shift_start_date,
+    {{ clean_snowflake_utc_date('ends_at') }}            AS shift_end_date,
+    real_breakduration                                   AS real_break_duration,
+    {{ clean_snowflake_utc_date('real_starts_at') }}     AS real_start_date,
+    {{ clean_snowflake_utc_date('real_ends_at') }}       AS real_end_date,
+    {{ clean_boolean('did_not_show') }}                  AS did_not_show,
+    {{ clean_snowflake_utc_date('validated_at') }}       AS validated_at,
+    validator_id,
+    {{ clean_snowflake_utc_date('planned_hours_last_edited_at') }} AS planned_hours_last_edited_at,
+    planned_hours_last_edited_by_id,
+    {{ clean_snowflake_utc_date('created_at') }}         AS created_at,
+    {{ clean_snowflake_utc_date('updated_at') }}         AS updated_at,
+    {{ clean_snowflake_utc_date('locked_at') }}          AS locked_at,
+    partner_id,
+    account_id,
+    COALESCE(planification_type, 'unknown')              AS planification_type
+FROM {{ source('raw', 'shifts') }}

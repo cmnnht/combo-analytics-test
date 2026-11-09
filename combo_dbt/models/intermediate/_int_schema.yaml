@@ -1,0 +1,13 @@
+version: 2
+
+models:
+  - name: int_user_contracts_deduplicated
+    tests:
+      - assert_no_overlapping_contracts:
+          severity: error
+
+  - name: int_employee_weekly_events
+    description: "Agrégation hebdomadaire des événements employés avec suivi des données orphelines"
+  - name: int_billable_location
+    description : Table référençant uniquement les établissements facturables i.e. non archivés
+  - name: int_weekly_location_metrics

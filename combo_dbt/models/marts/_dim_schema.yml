@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: dim_calendar
+    description: "Conformed date dimension table used for data warehouse-wide time-series analysis."
+    columns:
+      - name: date_key
+        description: "Surrogate Primary Key for dates formatted as an integer (YYYYMMDD)."
+        tests:
+          - unique
+          - not_null
+
+      - name: date_actual
+        description: "The raw date value in DATE format."
+        tests:
+          - unique
+          - not_null
+
+      - name: year_actual
+        description: "The four-digit calendar year (e.g., 2026)."
+
+      - name: quarter_name
+        description: "The alphanumeric representation of the quarter (e.g., Q1, Q2)."
+
+      - name: is_weekend
+        description: "Boolean flag identifying whether the date falls on a Saturday or Sunday."

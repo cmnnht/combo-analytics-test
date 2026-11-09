@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: fct_account_weekly_revenue
+    description: « Agrégation hebdomadaire des revenus attendus par compte client, incluant les composants de base et les coûts liés aux salariés supplémentaires. »
+    columns:
+      - name: account_weekly_revenue_pk
+        description: « Clé primaire synthétique (surrogate key) générée à partir de account_id et aggregation_week. »
+        data_tests:
+          - unique
+          - not_null
+
+      - name: account_id
+        description: « Identifiant unique du compte client. »
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_raw__accounts')
+              field: account_id
+
+      - name: date_key
+        description: « Clé de date au format entier YYYYMMDD correspondant au début de la semaine. »
+        data_tests:
+          - not_null
+
+      - name: metrics_week_start_date
+        description: « Date de début de la semaine d'agrégation des métriques financières. »
+        data_tests:
+          - not_null
+
+      - name: total_base_revenue
+        description: « Somme des prix de base facturés pour l'ensemble des établissements du compte sur la semaine. »
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true: # Teste si le revenu est positif ou nul
+              expression: ">= 0"
+
+      - name: total_extra_employee_revenue
+        description: « Somme des suppléments liés aux employés additionnels pour l'ensemble des localités sur la semaine. »
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true: # Teste si le revenu est positif ou nul
+              expression: ">= 0"
+
+      - name: total_expected_weekly_revenue
+        description: « Revenu hebdomadaire total attendu (base + extra) consolidé pour le compte. »
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true: # Teste si le revenu est positif ou nul
+              expression: ">= 0"
+
+    data_tests:
+      - dbt_utils.expression_is_true:
+          expression: "total_expected_weekly_revenue = total_base_revenue + total_extra_employee_revenue"
+
+  - name: fct_account_weekly_metrics
+    description: « Agrégation hebdomadaire du nombre d'établissements facturables et d'employés facturables attendus par compte client. »
+    columns:
+      - name: account_weekly_metrics_pk
+        description: « Clé primaire synthétique (surrogate key) générée à partir de account_id et aggregation_week. »
+        data_tests:
+          - unique
+          - not_null
+
+      - name: account_id
+        description: « Identifiant unique du compte client. »
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_raw__accounts')
+              field: account_id
+
+      - name: date_key
+        description: « Clé de date au format entier YYYYMMDD correspondant au début de la semaine. »
+        data_tests:
+          - not_null
+
+      - name: metrics_week_start_date
+        description: « Date de début de la semaine d'agrégation des métriques financières. »
+        data_tests:
+          - not_null
+
+      - name: total_billable_locations_count
+        description: « Nombre d'établissements facturables du compte sur la semaine. »
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true: # Teste si le nombre est positif ou nul
+              expression: ">= 0"
+
+      - name: total_billable_employees_count
+        description: « Nombre d'employés facturables du compte sur la semaine »
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true: # Teste si le nombre est positif ou nul
+              expression: ">= 0"

@@ -1,0 +1,63 @@
+sources: 
+  - name: raw
+    description: "Staging source for combo_analytics."
+    tables:
+      - name: accounts
+        description: "Staging table for accounts"
+        columns:
+          - name: id
+            description: "The unique identifier for an account."
+            tests:
+              - unique  # doit être unique 
+              - not_null  # doit être non nulle
+          - name: name
+            description: "The name of the account."
+      - name: locations
+        description: "Staging table for locations"  
+        columns:
+          - name: id
+            description: "The unique identifier for an account."
+            tests:
+              - unique  # doit être unique 
+              - not_null  # doit être non nulle
+              - relation:
+                  to: ref('raw', 'accounts')
+                  field: id
+          - name: name
+            description: "The name of the account."
+      - name: memberships
+        description: "Staging table for memberships"  
+        columns:
+          - name: id
+            description: "The unique identifier for an account."
+            tests:
+              - unique  # doit être unique 
+              - not_null  # doit être non nulle
+          - name: name
+            description: "The name of the account."
+      - name: rests
+        description: "Staging table for rests"
+        columns:
+          - name: id
+            description: "The unique identifier for an account."
+            tests:
+              - unique  # doit être unique 
+              - not_null  # doit être non nulle
+          - name: name
+            description: "The name of the account."
+      - name: shifts
+        description: "Staging table for shifts"
+        columns:
+          - name: id
+            description: "The unique identifier for an account."
+            tests:
+              - unique  # doit être unique 
+              - not_null  # doit être non nulle
+      - name: user_contracts
+        description: "Staging table for user_contracts"
+        columns:
+          - name: id
+            description: "The unique identifier for an account."
+            tests:
+              - unique  # doit être unique 
+              - not_null  # doit être non nulle

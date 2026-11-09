@@ -1,0 +1,4 @@
+extra_employee_tarification_id,extra_employee_tarification_code,extra_employee_tarification_label,extra_monthly_price,min_range,max_range
+1,few,Du 7ème au 39ème,4,7,39
+2,many,À partir du 40ème,2.4,40,
+3,none,Les 6 premiers,0,0,6

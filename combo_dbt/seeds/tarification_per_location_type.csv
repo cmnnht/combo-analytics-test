@@ -1,0 +1,4 @@
+location_size_tarification_id,location_size_tarification_code,location_size_tarification_label,currency,base_monthly_price,min_range,max_range
+1,micro,Micro (0-5 employés),EUR,60,0,5
+2,small,Petit (6-39 employés),EUR,80,6,39
+3,large,Grand (40+ employés),EUR,216,40,

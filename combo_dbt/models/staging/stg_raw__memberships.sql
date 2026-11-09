@@ -1,0 +1,20 @@
+SELECT
+    id          AS membership_id,
+    user_id,
+    account_id,
+    {{ clean_boolean('active') }}  AS is_active,
+    NULLIF(TRIM(role), '') AS role,
+    lastname               AS last_name,
+    firstname              AS first_name,
+    {{ clean_snowflake_utc_date('created_at') }} AS created_at,
+    {{ clean_snowflake_utc_date('updated_at') }} AS updated_at,
+    sort_index,
+    preferences,
+    onboarded,
+    can_manage_published_planning,
+    can_invalidate_shift,
+    can_remove_employee,
+    can_set_custom_rest_value,
+    street_address,
+    enhanced_medical_examination
+FROM {{ source('raw', 'memberships') }}

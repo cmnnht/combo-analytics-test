@@ -1,0 +1,66 @@
+version: 2
+
+seeds:
+  - name: tarification_per_extra_employee
+    description: "A CSV describing the tarification policy per extra employee based on company size ranges."
+    config:
+      column_types:
+        employees_range_id: number
+        employees_range_code: varchar
+        employees_range_label: varchar
+        base_monthly_price: number(10,2)
+        min_range: number
+        max_range: number
+    columns:
+      - name: extra_employee_tarification_id
+        description: "Unique identifier for the employee range."
+        tests:
+          - not_null
+          - unique
+      - name: extra_employee_tarification_code
+        description: "Short, standardized code representing the employee range (e.g., '10-49')."
+        tests:
+          - not_null
+          - unique
+      - name: extra_employee_tarification_label
+        description: "Human-readable label describing the employee range (e.g., 'From 10 to 49 employees')."
+      - name: extra_monthly_price
+        description: "The base monthly subscription cost applied to this specific employee range."
+      - name: min_range
+        description: "The lower bound (inclusive) of the employee count for this bracket."
+      - name: max_range
+        description: "The upper bound (inclusive) of the employee count for this bracket. Can be null for the highest open-ended tier."
+
+  - name: tarification_per_location_type
+    description: "A CSV describing the tarification policy applied to locations based on their size or surface category."
+    config:
+      # Types optimisés pour Snowflake
+      column_types:
+        location_size_tarification_id: number
+        location_size_tarification_icode: varchar
+        location_size_tarification_label: varchar
+        currency: varchar
+        base_monthly_price: number(10,2)
+        min_range: number
+        max_range: number
+    columns:
+      - name: location_size_tarification_id
+        description: "Unique identifier for the location size category."
+        tests:
+          - not_null
+          - unique
+      - name: location_size_tarification_code
+        description: "Short, standardized code representing the location size tier (e.g., 'micro', 'small', 'large')."
+        tests:
+          - not_null
+          - unique
+      - name: location_size_tarification_label
+        description: "Human-readable description of the location size category (e.g., 'Warehouse > 5000 sqft')."
+      - name: currency
+        description: "The three-letter ISO currency code used for the pricing (e.g., 'EUR', 'USD')."
+      - name: base_monthly_price
+        description: "The monthly price charged for a location falling into this size category."
+      - name: min_range
+        description: "The minimum employee number for this lacation category."
+      - name: max_range
+        description: "The maximum employee number for this lacation category. Can be null for the highest open-ended tier."

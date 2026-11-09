@@ -1,0 +1,22 @@
+SELECT
+    id          AS location_id,
+    name        AS location_name,
+    account_id,
+    {{ clean_snowflake_utc_date('created_at') }} AS created_at,
+    {{ clean_snowflake_utc_date('updated_at') }} AS updated_at,
+    address,
+    preferences,
+    city,
+    zipcode AS zip_code,
+    collective_agreement_id,
+    country,
+    partner_id,
+    {{ clean_boolean('archived') }} AS is_archived,
+    default_break_duration,
+    payroll_software_identifier,
+    enable_public_holiday_configuration,
+    public_holiday_overtime_rate,
+    public_holiday_paid_by_default,
+    location_type,
+    minimum_shift_duration_for_automatic_breaks_in_hours
+FROM {{ source('raw', 'locations') }}

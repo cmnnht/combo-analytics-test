@@ -1,0 +1,234 @@
+version: 2
+
+models :
+  - name: stg_raw__accounts
+    description: Staged account data from raw data.
+    columns:
+      - name: account_id
+        description: The primary key for the accounts table.
+        data_tests:
+          - unique
+          - not_null
+      - name: account_name
+        description: The name of the account.
+        data_tests:
+          - not_null
+      - name: created_at
+        description: The timestamp when the account was created.
+      - name: time_zone
+        description: The time zone of the account.
+      - name: country
+        description: The country of the account.
+
+  - name: stg_raw__locations
+    description: Staged location data from raw data.
+    columns:
+      - name: location_id
+        description: The primary key for the locations table.
+        data_tests:
+          - unique
+          - not_null
+      - name: account_id
+        description: The ID of the account associated with the location.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_raw__accounts')
+                field: account_id
+      - name: location_name
+        description: The name of the location.
+        data_tests:
+          - not_null
+      - name : is_archived
+        description: Indicates whether the location is archived (1) or active (0).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments: 
+                values: [true, false]
+      - name : city
+        description: The city where the location is situated.
+      - name : zip_code
+        description: The postal code of the location.
+      - name: country
+        description: The country of the location.
+
+  - name: stg_raw__memberships
+    description: Staged membership data from raw data.
+    columns:
+      - name: membership_id
+        description: The primary key for the memberships table.
+        data_tests:
+          - unique
+          - not_null
+      - name: user_id
+        description: The ID of the user associated with the membership.
+        data_tests:
+          - not_null
+      - name: account_id
+        description: The ID of the account associated with the membership.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_raw__accounts')
+                field: account_id
+      - name : is_active
+        description: Indicates whether the membership is active (1) or inactive (0).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true, false]
+      - name: role
+        description: The role of the user in the membership.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['employee', 'manager', 'owner']
+                severity: warn # Pas bloquant, mais à surveiller pour cette couche - 2 "nouveaux" rôles à check avec le métier 'director' 107  et 'main_owner' 22 
+      - name : first_name
+        description: The first name of the user associated with the membership. 
+      - name : last_name
+        description: The last name of the user associated with the membership.
+
+  - name: stg_raw__user_contracts
+    description: Staged user contract data from raw data.
+    tests:
+      - assert_no_overlapping_contracts:
+          severity: warn
+    columns:
+      - name: user_contract_id
+        description: The primary key for the user contracts table.
+        data_tests:
+          - unique
+          - not_null
+      - name: membership_id
+        description: The ID of the membership associated with the user contract.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_raw__memberships')
+                field: membership_id
+                severity: warn #  Un contrat doit toujours être lié à un employé existant
+      - name: location_id
+        description: The ID of the location associated with the user contract.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_raw__locations')
+                field: location_id
+      - name: account_id
+        description: The ID of the account associated with the membership.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_raw__accounts')
+                field: account_id
+      - name: contract_start 
+        description: The start date of the user contract.
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true: # Teste si la date de début est antérieure ou égale à la date de fin
+              expression: "<= contract_end"
+      - name: contract_end
+        description: The end date of the user contract.
+      - name: contract_type
+        description: The type of contract (e.g., CDI, CDD, seasonal, etc.).
+        data_tests:
+          - not_null
+      - name: contract_time_hours
+        description: Temps de travail hebdomadaire prévu par le contrat (en heures).
+        data_tests:
+          - dbt_utils.expression_is_true: # Teste si le temps de travail est supérieur à 0
+              expression: ">= 0"
+              severity: warn # Pas bloquant, mais à surveiller pour cette couche
+         
+
+  - name: stg_raw__rests
+    description: Staged rest data from raw data.
+    columns:
+      - name: rest_id
+        description: The primary key for the rests table.
+        data_tests:
+          - unique
+          - not_null
+      - name: user_contract_id
+        description: The ID of the user contract associated with the rest.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_raw__user_contracts')
+                field: user_contract_id
+                severity: warn # A faire gaffe ! Vérifier si c'est bien le bon champs référencé
+      - name: account_id
+        description: The ID of the account associated with the membership.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_raw__accounts')
+                field: account_id
+      - name: rest_start_date
+        description: The start date and time of the rest.
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true: # Teste si la date de début est antérieure ou égale à la date de fin
+              expression: "<= rest_end_date"
+              severity: warn # Pas bloquant, mais à surveiller pour cette couche
+      - name: rest_end_date
+        description: The end date and time of the rest.
+        data_tests:
+          - not_null
+      - name : rest_type
+        description: The type of rest (e.g., weekly_rest, compensatory_rest, formation, etc.).
+        data_tests:
+          - not_null
+
+  - name: stg_raw__shifts
+    description: Staged shift data from raw data.
+    columns:
+      - name: shift_id
+        description: The primary key for the shifts table.
+        data_tests:
+          - unique
+          - not_null
+      - name: user_contract_id
+        description: The ID of the user contract associated with the rest.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_raw__user_contracts')
+                field: user_contract_id
+                severity: warn # A faire gaffe ! Vérifier si c'est bien le bon champs référencé
+      - name: planification_type
+        description: The type of planification for the shift.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['scheduled', 'unscheduled', 'unknown']
+      - name: shift_start_date
+        description: The start date and time of the rest.
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true: # Teste si la date de début est antérieure ou égale à la date de fin
+              expression: "<= shift_end_date"
+      - name: shift_end_date
+        description: The end date and time of the rest.
+        data_tests:
+          - not_null
+          - dbt_utils.expression_is_true: # Teste si la date de fin est postérieure à la date de début
+              expression: ">= shift_start_date"
+      - name : did_not_show
+        description: Indicates whether the employee did not show up for the shift (1) or showed up (0).
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [true, false]

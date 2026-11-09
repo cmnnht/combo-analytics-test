@@ -1,0 +1,14 @@
+combo_dbt:
+  target: analytics 
+  outputs:
+    analytics:
+      type: snowflake
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      password: "{{ env_var('SNOWFLAKE_PASSWORD') }}"
+      # Paramètres spécifiques à Snowflake
+      role: "{{ env_var('DBT_SNOWFLAKE_ROLE', 'MY_DEFAULT_ROLE') }}"
+      warehouse: "{{ env_var('DBT_SNOWFLAKE_WAREHOUSE', 'MY_DEFAULT_WH') }}"
+      database: "{{ env_var('DBT_SNOWFLAKE_DATABASE', 'MY_DEV_DB') }}"
+      schema: "{{ env_var('DBT_TARGETSNOWFLAKE_SCHEMA', 'PUBLIC') }}"
+      threads: 4

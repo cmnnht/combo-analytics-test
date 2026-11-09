@@ -1,0 +1,9 @@
+.venv/
+*.snowflake
+*.snowflake.wal
+target/
+dbt_packages/
+logs/
+.env
+.DS_Store
+__pycache__/
